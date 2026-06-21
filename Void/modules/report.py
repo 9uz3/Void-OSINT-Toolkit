@@ -3,8 +3,6 @@ import os
 from datetime import datetime
 
 from rich.text import Text
-from rich.panel import Panel
-from rich import box
 
 from lib import constants as C
 from lib.void_common import console

@@ -14,7 +14,7 @@ from rich.padding import Padding
 from rich import box
 
 from lib import constants as C
-from lib.void_common import console, error_box, ansi_hex
+from lib.void_common import console
 
 
 class ScanResult:
@@ -75,12 +75,6 @@ class OSINTEngine:
         icon = icons.get(status, icons["pending"])
         console.print(f"  {icon}  [{C.C_DIM}]{number}/{total}[/] {label}")
 
-    def _progress_bar(self, current, total, width=30):
-        pct = current / total if total > 0 else 0
-        filled = int(width * pct)
-        bar = f"[{C.C_NEON}]{'█' * filled}[/{C.C_DIM}]{'░' * (width - filled)}[/]"
-        console.print(f"\r  [{C.C_GOLD}]{current}/{total}[/] {bar} [{C.C_WHITE}]{int(pct*100)}%[/]", end="")
-
     def run_email_scan(self, email):
         from modules.email.scanner import EmailScanner
         self.target = email
@@ -93,11 +87,9 @@ class OSINTEngine:
 
         scanner = EmailScanner()
         steps = [
-            ("EmailRep reputation check", scanner.check_reputation),
-            ("HaveIBeenPwned breach scan", scanner.check_breaches),
-            ("Holehe account discovery", scanner.discover_accounts),
+            ("Holehe email enumeration", scanner.check_reputation),
+            ("h8mail breach check", scanner.check_breaches),
             ("Gravatar profile lookup", scanner.check_gravatar),
-            ("Google Dork generation", scanner.generate_dorks),
         ]
 
         total = len(steps)

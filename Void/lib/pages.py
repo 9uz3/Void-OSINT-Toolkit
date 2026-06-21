@@ -150,7 +150,7 @@ def _system_info():
 def _home_dashboard():
     from datetime import datetime
     import shutil
-    s = C._ACTIVE_THEME
+    s = C.active_theme()
     n_reports = _count_reports()
     deps_ok = 0
     deps_total = 5
@@ -213,57 +213,6 @@ def _home_dashboard():
     console.print()
     console.print(Text.from_markup(f"[{C.C_DIM}]  Select a category from the sidebar to begin.[/]"))
     console.print(Text.from_markup(f"[{C.C_DIM}]  Press F to search across all tools.[/]"))
-    input(f"\033[38;2;120;0;0m  ► Enter to return...\033[0m")
-
-
-def _panel_tool(title, desc):
-    def fn():
-        panel(title, desc)
-        console.print(RichPanel(
-            Text.from_markup(f"[{C.C_SILVER}]This tool opens resources in your browser.[/]"),
-            border_style=C.C_BLOOD, padding=(1, 2),
-        ))
-        input(f"\033[38;2;120;0;0m  ► Enter to return...\033[0m")
-    return fn
-
-
-def _system_info():
-    import shutil
-    info = [
-        ("Version", f"Void OSINT Toolkit v{C.VERSION}"),
-        ("Author", "9uz3"),
-        ("Python", f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"),
-        ("Theme", C.active_theme()),
-        ("Terminal", f"{shutil.get_terminal_size((100, 30)).columns}x{shutil.get_terminal_size((100, 30)).lines}"),
-        ("Categories", "10"),
-        ("Total Tools", "32"),
-        ("Config Dir", C.CONFIG_DIR),
-        ("Data Dir", C.DATA_DIR),
-    ]
-    deps = []
-    for name, imp in [("dnspython", "dns"), ("phonenumbers", "phonenumbers"),
-                        ("Pillow", "PIL"), ("whois", "whois"), ("ipwhois", "ipwhois")]:
-        try:
-            __import__(imp)
-            deps.append(f"✓ {name}")
-        except ImportError:
-            deps.append(f"✗ {name}")
-    table = Table(box=box.MINIMAL_DOUBLE_HEAD, border_style=C.C_BLOOD, show_header=False)
-    table.add_column("Field", style=C.C_SILVER, width=16)
-    table.add_column("Value", style=C.C_WHITE)
-    for field, value in info:
-        table.add_row(field, value)
-    table2 = Table(box=box.MINIMAL_DOUBLE_HEAD, border_style=C.C_BLOOD, show_header=False)
-    table2.add_column("Dependency", style=C.C_SILVER, width=16)
-    table2.add_column("Status", style=C.C_WHITE)
-    for d in deps:
-        status, name = d.split(" ", 1)
-        style = C.C_NEON if status == "✓" else C.C_DIM
-        table2.add_row(name, f"[{style}]{status}[/]")
-    console.print(Padding(RichPanel(table, title=f"[bold {C.C_GOLD}]System Info[/]",
-                                 border_style=C.C_BLOOD, padding=(1, 2)), (1, 0)))
-    console.print(Padding(RichPanel(table2, title=f"[bold {C.C_GOLD}]Dependencies[/]",
-                                 border_style=C.C_BLOOD, padding=(1, 2)), (0, 0)))
     input(f"\033[38;2;120;0;0m  ► Enter to return...\033[0m")
 
 

@@ -62,38 +62,6 @@ class UsernameScanner:
         except Exception as e:
             return ScanResult(source="Maigret", category="platforms", status="error", error=str(e))
 
-    def whatsmyname_scan(self, username):
-        sites = [
-            ("GitHub", "https://github.com/{u}"),
-            ("GitLab", "https://gitlab.com/{u}"),
-            ("Bitbucket", "https://bitbucket.org/{u}/"),
-            ("Dev.to", "https://dev.to/{u}"),
-            ("HackerRank", "https://hackerrank.com/{u}"),
-            ("LeetCode", "https://leetcode.com/{u}"),
-            ("Replit", "https://replit.com/@{u}"),
-            ("Keybase", "https://keybase.io/{u}"),
-            ("Steam", "https://steamcommunity.com/id/{u}"),
-        ]
-        import urllib.request
-        found = []
-        for name, url_template in sites:
-            url = url_template.format(u=username)
-            try:
-                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-                with urllib.request.urlopen(req, timeout=5) as r:
-                    if r.getcode() == 200:
-                        body = r.read(1000).decode("utf-8", errors="ignore").lower()
-                        if "not found" not in body and "does not exist" not in body:
-                            found.append({"service": name, "url": url})
-            except Exception:
-                pass
-        return ScanResult(
-            source="WhatsMyName",
-            category="web",
-            status="found" if found else "none",
-            data={"profiles": found, "count": len(found)},
-        )
-
     def social_check(self, username):
         import urllib.parse
         links = [

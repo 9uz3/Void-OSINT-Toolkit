@@ -47,26 +47,21 @@ class PhoneScanner:
     def identify_carrier(self, phone):
         try:
             proc = subprocess.run(
-                ["phoneinfoga", "scan", "-n", phone, "-o", "json"],
+                ["phoneinfoga", "scan", "-n", phone, "--no-ansi"],
                 capture_output=True, text=True, timeout=20
             )
             output = proc.stdout
-            try:
-                data = json.loads(output)
-                return ScanResult(
-                    source="PhoneInfoga",
-                    category="carrier",
-                    status="found",
-                    data={"raw_output": data},
-                )
-            except json.JSONDecodeError:
-                lines = [l.strip() for l in output.split("\n") if l.strip()]
-                return ScanResult(
-                    source="PhoneInfoga",
-                    category="carrier",
-                    status="found" if lines else "none",
-                    data={"output": lines},
-                )
+            lines = []
+            for line in output.split("\n"):
+                line = line.strip()
+                if line and not line.startswith("─") and not line.startswith("│") and not line.startswith("┌") and not line.startswith("└") and not line.startswith("[") and not line.startswith("\\") and not line.startswith("/") and not line.startswith("|") and not line.startswith("V") and not line.startswith(".") and not line.startswith("=") and not line.startswith("#") and not line.startswith("_") and not line.startswith("W") and not line.startswith("@") and len(line) > 3:
+                    lines.append(line)
+            return ScanResult(
+                source="PhoneInfoga",
+                category="carrier",
+                status="found" if lines else "none",
+                data={"output": lines},
+            )
         except FileNotFoundError:
             return ScanResult(source="PhoneInfoga", category="carrier", status="error", error="phoneinfoga not installed: pip install phoneinfoga")
         except Exception as e:

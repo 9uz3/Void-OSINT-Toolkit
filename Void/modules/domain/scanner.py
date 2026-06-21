@@ -1,10 +1,8 @@
-"""Domain Intelligence — wrapper for theHarvester + amass + subfinder + whatweb."""
-import json
+"""Domain Intelligence — wrapper for theHarvester + amass + whatweb."""
 import re
 import socket
 import ssl
 import subprocess
-import urllib.request
 
 from core.engine import ScanResult
 
@@ -105,46 +103,6 @@ class DomainScanner:
             return ScanResult(source="theHarvester", category="harvesting", status="error", error="theHarvester not installed")
         except Exception as e:
             return ScanResult(source="theHarvester", category="harvesting", status="error", error=str(e))
-
-    def sublist3r_scan(self, domain):
-        try:
-            proc = subprocess.run(
-                ["sublist3r", "-d", domain],
-                capture_output=True, text=True, timeout=60
-            )
-            output = proc.stdout
-            subdomains = []
-            for line in output.split("\n"):
-                line = line.strip()
-                if line and "." in line and not line.startswith("[") and not line.startswith("Sub"):
-                    subdomains.append(line)
-            return ScanResult(
-                source="Sublist3r",
-                category="subdomains",
-                status="found" if subdomains else "none",
-                data={"subdomains": subdomains[:50], "count": len(subdomains)},
-            )
-        except FileNotFoundError:
-            return ScanResult(source="Sublist3r", category="subdomains", status="error", error="sublist3r not installed")
-        except Exception as e:
-            return ScanResult(source="Sublist3r", category="subdomains", status="error", error=str(e))
-
-    def enumerate_subdomains(self, domain):
-        common = ["www", "mail", "ftp", "admin", "api", "dev", "staging", "test", "blog", "shop"]
-        found = []
-        for sub in common:
-            fqdn = f"{sub}.{domain}"
-            try:
-                socket.getaddrinfo(fqdn, None)
-                found.append(fqdn)
-            except Exception:
-                pass
-        return ScanResult(
-            source="DNS Brute",
-            category="subdomains",
-            status="found" if found else "none",
-            data={"subdomains": found, "count": len(found)},
-        )
 
     def detect_tech(self, domain):
         try:

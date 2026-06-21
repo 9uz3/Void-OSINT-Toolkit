@@ -8,7 +8,6 @@ import sys
 import urllib.parse
 import urllib.request
 import urllib.error
-from datetime import datetime
 
 from rich.panel import Panel
 from rich.table import Table
@@ -19,7 +18,7 @@ from rich import box
 from . import constants as C
 from .void_common import (
     ansi_hex as _ansi, console, error_box as _error_box,
-    panel as _panel, pause as _pause, success_box as _success_box,
+    panel as _panel, pause as _pause,
 )
 
 C_BLOOD = C.C_BLOOD
@@ -39,14 +38,6 @@ def _fetch_json(url, timeout=10):
     })
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.loads(r.read().decode())
-
-
-def _fetch_text(url, timeout=10):
-    req = urllib.request.Request(url, headers={
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    })
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return r.read().decode("utf-8", errors="ignore")
 
 
 def _show_table(title, rows, border_style=None):
@@ -85,11 +76,6 @@ _USERNAME_SITES = [
     ("Replit",    "https://replit.com/@{u}"),
     ("Glitch",    "https://glitch.com/@{u}"),
 ]
-
-
-def _extract_domain(url):
-    from urllib.parse import urlparse
-    return urlparse(url).netloc
 
 
 # ── EMAIL OSINT ──────────────────────────────────────────────
@@ -229,7 +215,6 @@ def tool_username_analyze():
         patterns.append("Short (<5 chars)")
 
     entropy = 0
-    chars = set(u)
     if re.search(r'[a-z]', u): entropy += 26
     if re.search(r'[A-Z]', u): entropy += 26
     if re.search(r'\d', u):   entropy += 10
@@ -389,7 +374,7 @@ def tool_breach_search():
 _TECH_PATTERNS = [
     ("Server",            r"Server: (.+)"),
     ("X-Powered-By",      r"X-Powered-By: (.+)"),
-    ("CF-Ray",            r"CF-Ray", "Cloudflare"),
+    ("CF-Ray",            r"CF-Ray"),
     ("X-Generator",       r"X-Generator: (.+)"),
     ("X-Version",         r"X-Version: (.+)"),
     ("ASP.NET",           r"X-AspNet-Version: (.+)"),
