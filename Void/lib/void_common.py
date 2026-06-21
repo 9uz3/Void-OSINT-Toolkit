@@ -43,6 +43,12 @@ def ansi_hex(h):
 if os.name == "nt":
     import msvcrt
 
+    def cbreak_on():
+        pass
+
+    def cbreak_off():
+        pass
+
     def _read_key(timeout=None):
         _ = timeout
         if not msvcrt.kbhit():
