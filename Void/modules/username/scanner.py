@@ -1,4 +1,4 @@
-"""Username Intelligence — wrapper for sherlock + maigret + ghunt + nexfil."""
+"""Username Intelligence — wrapper for user-scanner."""
 import json
 import subprocess
 
@@ -9,30 +9,39 @@ class UsernameScanner:
     def sherlock_scan(self, username):
         try:
             proc = subprocess.run(
-                ["sherlock", username, "--timeout", "5", "--print-found", "--json", "-"],
-                capture_output=True, text=True, timeout=60
+                ["user-scanner", "-u", username, "--only-found", "-f", "json"],
+                capture_output=True, text=True, timeout=120
             )
             output = proc.stdout
-            found = []
-            for line in output.split("\n"):
-                line = line.strip()
-                if "[+" in line:
-                    parts = line.split(":", 1)
-                    if len(parts) == 2:
-                        site = parts[0].replace("[+]", "").replace("[", "").replace("]", "").strip()
-                        url = parts[1].strip()
-                        if site and url:
-                            found.append({"service": site, "url": url})
+            results = []
+            try:
+                data = json.loads(output)
+                for item in data:
+                    if item.get("status") == "Claimed":
+                        results.append({
+                            "service": item.get("site_name", "?"),
+                            "url": item.get("url", ""),
+                            "category": item.get("category", ""),
+                        })
+            except json.JSONDecodeError:
+                for line in output.split("\n"):
+                    line = line.strip()
+                    if "[✔]" in line and "Claimed" in line:
+                        parts = line.split("[✔]")
+                        if len(parts) > 1:
+                            site = parts[1].split("(")[0].strip()
+                            results.append({"service": site, "url": "", "category": ""})
+
             return ScanResult(
-                source="Sherlock",
+                source="user-scanner",
                 category="platforms",
-                status="found" if found else "none",
-                data={"profiles": found, "count": len(found)},
+                status="found" if results else "none",
+                data={"profiles": results, "count": len(results)},
             )
         except FileNotFoundError:
-            return ScanResult(source="Sherlock", category="platforms", status="error", error="sherlock not installed: pip install sherlock-project")
+            return ScanResult(source="user-scanner", category="platforms", status="error", error="user-scanner not installed: pip install user-scanner")
         except Exception as e:
-            return ScanResult(source="Sherlock", category="platforms", status="error", error=str(e))
+            return ScanResult(source="user-scanner", category="platforms", status="error", error=str(e))
 
     def maigret_scan(self, username):
         try:
@@ -48,9 +57,7 @@ class UsernameScanner:
                     if isinstance(info, dict) and info.get("url_user"):
                         found.append({"service": site, "url": info["url_user"]})
             except json.JSONDecodeError:
-                for line in output.split("\n"):
-                    if "http" in line.lower() and ("found" in line.lower() or "+" in line):
-                        found.append({"service": line.split()[0] if line.split() else "?", "url": line.strip()})
+                pass
             return ScanResult(
                 source="Maigret",
                 category="platforms",

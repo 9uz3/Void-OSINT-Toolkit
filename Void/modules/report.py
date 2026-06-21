@@ -58,11 +58,14 @@ def _print_data(data, url=None):
             for item in v:
                 if isinstance(item, dict):
                     service = item.get("service", item.get("name", "?"))
-                    item_url = item.get("url", item.get("url_user", ""))
+                    item_url = item.get("url", "")
+                    category = item.get("category", "")
                     if item_url:
-                        console.print(f"    [{C.C_NEON}]→[/] [{C.C_GOLD}]{service}:[/] [{C.C_WHITE}]{item_url}[/]")
+                        cat_str = f" [{C.C_DIM}]{category}[/]" if category else ""
+                        console.print(f"    [{C.C_NEON}]→[/] [{C.C_GOLD}]{service}:[/] [{C.C_WHITE}]{item_url}[/]{cat_str}")
                     else:
-                        console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{item}[/]")
+                        cat_str = f" [{C.C_DIM}]{category}[/]" if category else ""
+                        console.print(f"    [{C.C_NEON}]→[/] [{C.C_GOLD}]{service}[/]{cat_str}")
                 else:
                     console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{item}[/]")
         elif isinstance(v, dict):

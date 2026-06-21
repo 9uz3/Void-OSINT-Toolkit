@@ -1,4 +1,4 @@
-"""Email Intelligence — wrapper for holehe + h8mail."""
+"""Email Intelligence — wrapper for user-scanner."""
 import json
 import subprocess
 
@@ -9,27 +9,39 @@ class EmailScanner:
     def check_reputation(self, email):
         try:
             proc = subprocess.run(
-                ["holehe", "--only-used", "--no-color", "--no-clear", email],
-                capture_output=True, text=True, timeout=30
+                ["user-scanner", "-e", email, "--only-found", "-f", "json"],
+                capture_output=True, text=True, timeout=120
             )
             output = proc.stdout
-            found = []
-            for line in output.split("\n"):
-                line = line.strip()
-                if "[+]" in line:
-                    site = line.split("[+]")[-1].strip()
-                    if site and site not in ("Email used", ""):
-                        found.append(site)
+            results = []
+            try:
+                data = json.loads(output)
+                for item in data:
+                    if item.get("status") == "Registered":
+                        results.append({
+                            "service": item.get("site_name", "?"),
+                            "url": item.get("url", ""),
+                            "category": item.get("category", ""),
+                        })
+            except json.JSONDecodeError:
+                for line in output.split("\n"):
+                    line = line.strip()
+                    if "[✔]" in line and "Registered" in line:
+                        parts = line.split("[✔]")
+                        if len(parts) > 1:
+                            site = parts[1].split("(")[0].strip()
+                            results.append({"service": site, "url": "", "category": ""})
+
             return ScanResult(
-                source="Holehe",
+                source="user-scanner",
                 category="email_enum",
-                status="found" if found else "none",
-                data={"services": found, "count": len(found)},
+                status="found" if results else "none",
+                data={"services": results, "count": len(results)},
             )
         except FileNotFoundError:
-            return ScanResult(source="Holehe", category="email_enum", status="error", error="holehe not installed: pip install holehe")
+            return ScanResult(source="user-scanner", category="email_enum", status="error", error="user-scanner not installed: pip install user-scanner")
         except Exception as e:
-            return ScanResult(source="Holehe", category="email_enum", status="error", error=str(e))
+            return ScanResult(source="user-scanner", category="email_enum", status="error", error=str(e))
 
     def check_breaches(self, email):
         try:

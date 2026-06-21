@@ -87,7 +87,7 @@ class OSINTEngine:
 
         scanner = EmailScanner()
         steps = [
-            ("Holehe email enumeration", scanner.check_reputation),
+            ("user-scanner email scan", scanner.check_reputation),
             ("h8mail breach check", scanner.check_breaches),
             ("Gravatar profile lookup", scanner.check_gravatar),
         ]
