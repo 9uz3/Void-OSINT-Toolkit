@@ -30,12 +30,33 @@ def show_results_panel(engine):
     console.print()
 
     for r in engine.results:
-        if r.is_success():
-            console.print(Text.from_markup(f"  [{C.C_NEON}]✔[/] [{C.C_GOLD}]{r.source}[/] found:"))
-            for k, v in r.data.items():
-                if v and str(v) not in ("none", "none found", "N/A", "Unknown", ""):
-                    console.print(f"    [{C.C_WHITE}]{k}:[/] [{C.C_SILVER}]{v}[/]")
-        elif r.error:
+        if not r.is_success():
+            continue
+        console.print(Text.from_markup(f"  [{C.C_NEON}]✔[/] [{C.C_GOLD}]{r.source}[/] found:"))
+        for k, v in r.data.items():
+            v_str = str(v)
+            if v_str in ("none", "none found", "N/A", "Unknown", "", "0", "False"):
+                continue
+            if k == "dorks":
+                for dork in v_str.split(" | "):
+                    console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{dork}[/]")
+            elif k in ("associated_accounts", "sites", "breach_names", "profiles"):
+                for item in v_str.split(", "):
+                    if item and item.strip():
+                        console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{item.strip()}[/]")
+            elif k in ("subdomains", "technologies"):
+                for item in v_str.split(", "):
+                    if item and item.strip():
+                        console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{item.strip()}[/]")
+            elif r.url and k in ("reputation", "status", "valid", "deliverable"):
+                console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{k}:[/] [{C.C_WHITE}]{v_str}[/]  [{C.C_DIM}]{r.url}[/]")
+            else:
+                console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{k}:[/] [{C.C_WHITE}]{v_str}[/]")
+
+    errors = [r for r in engine.results if r.error]
+    if errors:
+        console.print()
+        for r in errors:
             console.print(Text.from_markup(f"  [{C.C_DIM}]✗[/] [{C.C_DIM}]{r.source}[/] — [{C.C_BLOOD}]{r.error}[/]"))
 
     console.print()
