@@ -33,8 +33,11 @@ def show_results_panel(engine):
     for r in engine.results:
         if not r.is_success():
             continue
-        console.print(Text.from_markup(f"  [{C.C_NEON}]✔[/] [{C.C_GOLD}]{r.source}[/] found:"))
-        _print_data(r.data, r.url)
+        count = r.data.get("count", 0)
+        if count:
+            console.print(f"  [{C.C_NEON}]✔[/] [{C.C_GOLD}]{r.source}[/] — [{C.C_WHITE}]{count}[/] results found")
+        else:
+            console.print(f"  [{C.C_NEON}]✔[/] [{C.C_GOLD}]{r.source}[/] found")
 
     if errors:
         console.print()

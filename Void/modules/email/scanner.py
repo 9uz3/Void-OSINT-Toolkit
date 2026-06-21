@@ -1,37 +1,41 @@
-"""Email Intelligence — wrapper for user-scanner."""
+"""Email Intelligence — wrapper for user-scanner with real-time output."""
 import json
 import subprocess
 
 from core.engine import ScanResult
+from lib.void_common import console
+from lib import constants as C
 
 
 class EmailScanner:
     def check_reputation(self, email):
+        results = []
         try:
-            proc = subprocess.run(
-                ["user-scanner", "-e", email, "--only-found", "-f", "json"],
-                capture_output=True, text=True, timeout=120
+            proc = subprocess.Popen(
+                ["user-scanner", "-e", email, "--only-found"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
             )
-            output = proc.stdout
-            results = []
-            try:
-                data = json.loads(output)
-                for item in data:
-                    if item.get("status") == "Registered":
-                        results.append({
-                            "service": item.get("site_name", "?"),
-                            "url": item.get("url", ""),
-                            "category": item.get("category", ""),
-                        })
-            except json.JSONDecodeError:
-                for line in output.split("\n"):
-                    line = line.strip()
-                    if "[✔]" in line and "Registered" in line:
-                        parts = line.split("[✔]")
-                        if len(parts) > 1:
-                            site = parts[1].split("(")[0].strip()
-                            results.append({"service": site, "url": "", "category": ""})
-
+            current_category = ""
+            for line in proc.stdout:
+                line = line.strip()
+                if not line:
+                    continue
+                if line.startswith("==") and "==" in line[2:]:
+                    cat = line.replace("=", "").strip()
+                    if cat and cat != current_category:
+                        current_category = cat
+                        console.print(f"    [{C.C_DIM}]─── {cat} ───[/]")
+                elif "[✔]" in line:
+                    parts = line.split("[✔]")
+                    if len(parts) > 1:
+                        site_part = parts[1].split("(")[0].strip()
+                        site = site_part.split(":")[0].strip() if ":" in site_part else site_part
+                        if site:
+                            results.append({"service": site, "url": "", "category": current_category})
+                            console.print(f"    [{C.C_NEON}]→[/] [{C.C_GOLD}]{site}[/]")
+            proc.wait(timeout=120)
             return ScanResult(
                 source="user-scanner",
                 category="email_enum",
@@ -40,6 +44,14 @@ class EmailScanner:
             )
         except FileNotFoundError:
             return ScanResult(source="user-scanner", category="email_enum", status="error", error="user-scanner not installed: pip install user-scanner")
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            return ScanResult(
+                source="user-scanner",
+                category="email_enum",
+                status="found" if results else "none",
+                data={"services": results, "count": len(results)},
+            )
         except Exception as e:
             return ScanResult(source="user-scanner", category="email_enum", status="error", error=str(e))
 
