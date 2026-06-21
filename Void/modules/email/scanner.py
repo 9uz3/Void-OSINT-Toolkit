@@ -1,5 +1,6 @@
 """Email Intelligence — wrapper for user-scanner with live feedback."""
 import json
+import os
 import subprocess
 import sys
 import threading
@@ -86,7 +87,7 @@ class EmailScanner:
 
         try:
             proc = subprocess.Popen(
-                ["h8mail", "-t", email, "-o", "/dev/null", "--json"],
+                ["h8mail", "-t", email, "-o", "NUL" if os.name == "nt" else "/dev/null", "--json"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True

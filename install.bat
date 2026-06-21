@@ -24,10 +24,11 @@ if errorlevel 1 (
 )
 
 echo.
-echo   ┌─────────────────────────────────────┐
-echo   │  Void OSINT Toolkit installed!      │
-echo   │                                     │
-echo   │  Just type: voidosint               │
-echo   └─────────────────────────────────────┘
+echo   ============================================
+echo   VOID OSINT TOOLKIT - Installed!
+echo   ============================================
+echo.
+echo   Run: voidosint
+echo   First run will install all dependencies.
 echo.
 pause

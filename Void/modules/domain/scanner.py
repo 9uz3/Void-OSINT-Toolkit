@@ -1,8 +1,10 @@
 """Domain Intelligence — wrapper for theHarvester + amass + whatweb."""
+import os
 import re
 import socket
 import ssl
 import subprocess
+import tempfile
 
 from core.engine import ScanResult
 
@@ -79,11 +81,28 @@ class DomainScanner:
 
     def theharvester_scan(self, domain):
         try:
-            proc = subprocess.run(
-                ["theHarvester", "-d", domain, "-b", "bing,yahoo,duckduckgo", "-f", "/dev/stdout"],
-                capture_output=True, text=True, timeout=120
-            )
-            output = proc.stdout
+            if os.name == "nt":
+                with tempfile.NamedTemporaryFile(mode="w", suffix=".xml", delete=False) as tmp:
+                    tmp_path = tmp.name
+                try:
+                    proc = subprocess.run(
+                        ["theHarvester", "-d", domain, "-b", "bing,yahoo,duckduckgo", "-f", tmp_path],
+                        capture_output=True, text=True, timeout=120
+                    )
+                    if os.path.exists(tmp_path):
+                        with open(tmp_path, "r", errors="ignore") as f:
+                            output = f.read()
+                    else:
+                        output = proc.stdout
+                finally:
+                    if os.path.exists(tmp_path):
+                        os.unlink(tmp_path)
+            else:
+                proc = subprocess.run(
+                    ["theHarvester", "-d", domain, "-b", "bing,yahoo,duckduckgo", "-f", "/dev/stdout"],
+                    capture_output=True, text=True, timeout=120
+                )
+                output = proc.stdout
             emails = []
             hosts = []
             for line in output.split("\n"):

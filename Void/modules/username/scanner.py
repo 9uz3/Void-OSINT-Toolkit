@@ -1,9 +1,11 @@
 """Username Intelligence — wrapper for user-scanner with live feedback."""
 import json
+import os
 import subprocess
 import sys
 import threading
 import time
+import tempfile
 
 from core.engine import ScanResult
 from lib.void_common import console
@@ -79,11 +81,28 @@ class UsernameScanner:
 
     def maigret_scan(self, username):
         try:
-            proc = subprocess.run(
-                ["maigret", username, "--json", "-o", "/dev/stdout"],
-                capture_output=True, text=True, timeout=90
-            )
-            output = proc.stdout
+            if os.name == "nt":
+                with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as tmp:
+                    tmp_path = tmp.name
+                try:
+                    proc = subprocess.run(
+                        ["maigret", username, "--json", "-o", tmp_path],
+                        capture_output=True, text=True, timeout=90
+                    )
+                    if os.path.exists(tmp_path):
+                        with open(tmp_path, "r", errors="ignore") as f:
+                            output = f.read()
+                    else:
+                        output = proc.stdout
+                finally:
+                    if os.path.exists(tmp_path):
+                        os.unlink(tmp_path)
+            else:
+                proc = subprocess.run(
+                    ["maigret", username, "--json", "-o", "/dev/stdout"],
+                    capture_output=True, text=True, timeout=90
+                )
+                output = proc.stdout
             found = []
             try:
                 data = json.loads(output)
