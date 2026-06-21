@@ -37,19 +37,11 @@ def show_results_panel(engine):
             v_str = str(v)
             if v_str in ("none", "none found", "N/A", "Unknown", "", "0", "False"):
                 continue
-            if k == "dorks":
-                for dork in v_str.split(" | "):
-                    console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{dork}[/]")
-            elif k in ("associated_accounts", "sites", "breach_names", "profiles"):
-                for item in v_str.split(", "):
-                    if item and item.strip():
-                        console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{item.strip()}[/]")
-            elif k in ("subdomains", "technologies"):
-                for item in v_str.split(", "):
-                    if item and item.strip():
-                        console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{item.strip()}[/]")
-            elif r.url and k in ("reputation", "status", "valid", "deliverable"):
-                console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{k}:[/] [{C.C_WHITE}]{v_str}[/]  [{C.C_DIM}]{r.url}[/]")
+            if "\n" in v_str:
+                for line in v_str.split("\n"):
+                    line = line.strip()
+                    if line:
+                        console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{line}[/]")
             else:
                 console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{k}:[/] [{C.C_WHITE}]{v_str}[/]")
 
