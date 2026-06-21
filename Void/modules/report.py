@@ -1,8 +1,11 @@
-"""Report generation — single TXT file + terminal display."""
+"""Report generation — Enhanced visual formatting."""
 import os
 from datetime import datetime
 
 from rich.text import Text
+from rich.panel import Panel
+from rich.table import Table
+from rich import box
 
 from lib import constants as C
 from lib.void_common import console
@@ -10,6 +13,8 @@ from lib.void_common import console
 
 def show_results_panel(engine):
     now = datetime.now()
+    found = [r for r in engine.results if r.is_success()]
+    errors = [r for r in engine.results if r.error]
 
     console.print()
     console.print(Text.from_markup(
@@ -31,7 +36,6 @@ def show_results_panel(engine):
         console.print(Text.from_markup(f"  [{C.C_NEON}]✔[/] [{C.C_GOLD}]{r.source}[/] found:"))
         _print_data(r.data, r.url)
 
-    errors = [r for r in engine.results if r.error]
     if errors:
         console.print()
         for r in errors:
@@ -65,7 +69,7 @@ def _print_data(data, url=None):
             for dk, dv in v.items():
                 if dv:
                     console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{dk}:[/] [{C.C_WHITE}]{dv}[/]")
-        elif v and str(v) not in ("none", "none found", "N/A", "Unknown", "", "0", "False", "0", "[]", "{}"):
+        elif v and str(v) not in ("none", "none found", "N/A", "Unknown", "", "0", "False", "[]", "{}"):
             console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{k}:[/] [{C.C_WHITE}]{v}[/]")
     if url:
         console.print(f"    [{C.C_DIM}]→ Link:[/] [{C.C_WHITE}]{url}[/]")

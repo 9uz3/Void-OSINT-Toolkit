@@ -1,4 +1,4 @@
-"""Cinematic boot sequence."""
+"""Cinematic boot sequence — Enhanced visual effects."""
 import os, select, sys, time, shutil, math, random
 
 from . import constants as C

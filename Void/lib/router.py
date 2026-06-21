@@ -1,4 +1,4 @@
-"""Main dashboard — Rich layout, live clock, sidebar scroll."""
+"""Main dashboard — Enhanced layout with better visual design."""
 import shutil
 import sys
 import time
@@ -15,7 +15,7 @@ from . import constants as C
 from .config import get_settings
 from .pages import build_pages_data
 from .search import run_search_ui
-from .ui import make_card_cell, make_title_text, monitor_block
+from .ui import make_card_cell, make_title_text, monitor_block, CATEGORY_ICONS
 from .void_common import cbreak_off, cbreak_on, cls, flush_keys, is_arrow, poll_console_key, safe_action, sort_free_first
 
 
@@ -103,7 +103,7 @@ class MasterRouter:
             make_title_text("VOID OSINT", phase),
             Text.from_markup(f"[bold {pal['neon']}]{s.username[:16]}[/]"),
         )
-        sub = f"[ {time.strftime('%H:%M:%S')} ]"
+        sub = f"[ {time.strftime('%H:%M:%S')} ] v{C.VERSION}"
         layout["header"].update(Panel(
             head, border_style=pal["blood"], box=box.HEAVY_EDGE,
             subtitle=sub,
@@ -118,14 +118,15 @@ class MasterRouter:
         end_cat = min(n_cat, self.cat_scroll + self.MAX_CAT_VISIBLE)
         for i in range(self.cat_scroll, end_cat):
             _, label = self.categories[i]
+            icon = CATEGORY_ICONS.get(label, "·")
             act = i == self.cat_idx
             foc = act and self.focus == "sidebar"
             if foc:
-                sidebar.add_row(Text.from_markup(f"[black on {pal['neon']} bold] » {label:<22} [/]"))
+                sidebar.add_row(Text.from_markup(f"[black on {pal['neon']} bold] {icon} {label:<20} [/]"))
             elif act:
-                sidebar.add_row(Text.from_markup(f"[{pal['neon']} bold] █ {label:<22} [/]"))
+                sidebar.add_row(Text.from_markup(f"[{pal['neon']} bold] {icon} {label:<20} [/]"))
             else:
-                sidebar.add_row(Text.from_markup(f"[{C.C_DIM}] │ {label:<22} [/]"))
+                sidebar.add_row(Text.from_markup(f"[{C.C_DIM}] {icon} {label:<20} [/]"))
 
         cat_label = self.categories[self.cat_idx][1]
         layout["sidebar"].update(Panel(

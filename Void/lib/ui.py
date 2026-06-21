@@ -1,4 +1,4 @@
-"""Dashboard UI — Rich panels, theme colors."""
+"""Dashboard UI — Enhanced visual design."""
 import time
 
 from rich.align import Align
@@ -8,6 +8,12 @@ from rich import box
 
 from . import constants as C
 from .void_common import count_free_premium, fmt_label, is_premium
+
+CATEGORY_ICONS = {
+    "HOME": "⌂", "EMAIL": "✉", "PHONE": "☎", "IP / NET": "◈",
+    "USERNAME": "◎", "DOMAIN": "◉", "SOCIAL": "⬡", "BREACH": "⚠",
+    "WEB": "🌐", "DORK": "🔍", "IMAGE": "◎", "ABOUT": "ℹ",
+}
 
 
 def _phase():
@@ -39,6 +45,7 @@ def make_card_cell(key, label, is_selected, phase=None):
     border = C.C_WHITE if is_selected else (C.C_GOLD if prem else C.C_DIM)
     style = p["neon"] if is_selected else (C.C_GOLD2 if prem else C.C_WHITE)
     text = fmt_label(label, max_len=26)
+
     if is_selected:
         inner = Text()
         inner.append(f" {text} ", style=f"{style} bold")
@@ -48,6 +55,7 @@ def make_card_cell(key, label, is_selected, phase=None):
         inner.append("READY", style="#88FFAA bold")
     else:
         inner = Text.from_markup(f"   [{style}]{text}[/]")
+
     return Panel(
         Align.center(inner),
         title=f"[{color} bold]{key}[/]",
@@ -64,9 +72,10 @@ def monitor_block(cat_label, n_tools, items, username, phase=None):
     free, prem = count_free_premium(items)
     user = (username or "Op")[:14]
     cat = (cat_label or "?")[:12]
+    icon = CATEGORY_ICONS.get(cat_label, "·")
     return Text.from_markup(
         f"\n\n[{p['blood']}]┌─ MONITOR\n"
-        f"│ [bold {p['neon']}]{user}[/]\n"
+        f"│ [{p['neon']}]{icon}[/] [bold {p['neon']}]{user}[/]\n"
         f"│ [{C.C_GOLD}]{free}[/] free · [{C.C_GOLD2}]{prem}[/] vip\n"
         f"│ [{C.C_SILVER}]{cat}[/] · [{C.C_GOLD}]{n_tools}[/] tools\n"
         f"└─ [{p['neon']}]READY[/]"
