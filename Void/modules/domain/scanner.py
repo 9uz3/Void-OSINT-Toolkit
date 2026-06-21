@@ -61,8 +61,8 @@ class DomainScanner:
                 with ctx.wrap_socket(sock, server_hostname=domain) as ssock:
                     cert = ssock.getpeercert()
             if cert:
-                subject = dict(x for x in cert.get("subject", []) for x in [x]) if cert.get("subject") else {}
-                issuer = dict(x for x in cert.get("issuer", []) for x in [x]) if cert.get("issuer") else {}
+                subject = dict(x[0] for x in cert.get("subject", ()))
+                issuer = dict(x[0] for x in cert.get("issuer", ()))
                 san = cert.get("subjectAltName", [])
                 return ScanResult(
                     source="SSL",

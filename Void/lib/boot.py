@@ -1,5 +1,5 @@
 """Cinematic boot sequence — Enhanced visual effects."""
-import os, select, sys, time, shutil, math, random
+import os, select, sys, time, shutil, math
 
 from . import constants as C
 
