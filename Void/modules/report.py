@@ -13,8 +13,6 @@ from lib.void_common import console
 
 
 def show_results_panel(engine):
-    found = [r for r in engine.results if r.is_success()]
-    errors = [r for r in engine.results if r.error]
     now = datetime.now()
 
     console.print()
@@ -31,22 +29,16 @@ def show_results_panel(engine):
     console.print(Text.from_markup(f"  [{C.C_GOLD}]STATUS:[/]   [#88FFAA bold]COMPLETED[/]"))
     console.print()
 
-    table = Table(box=box.MINIMAL_DOUBLE_HEAD, border_style=C.C_BLOOD, show_header=True)
-    table.add_column("Source", style=C.C_GOLD, width=22)
-    table.add_column("Status", style=C.C_WHITE, width=14)
-    table.add_column("Details", style=C.C_SILVER)
-
     for r in engine.results:
         if r.is_success():
-            detail = ", ".join(f"{k}: {v}" for k, v in list(r.data.items())[:3])
-            table.add_row(r.source, f"[#88FFAA]FOUND[/]", detail)
+            console.print(Text.from_markup(f"  [{C.C_NEON}]✔[/] [{C.C_GOLD}]{r.source}[/] found:"))
+            for k, v in r.data.items():
+                if v and str(v) not in ("none", "none found", "N/A", "Unknown", ""):
+                    console.print(f"    [{C.C_WHITE}]{k}:[/] [{C.C_SILVER}]{v}[/]")
         elif r.error:
-            table.add_row(r.source, f"[#FF4444]ERROR[/]", r.error[:50])
-        else:
-            table.add_row(r.source, f"[{C.C_DIM}]NONE[/]", "-")
+            console.print(Text.from_markup(f"  [{C.C_DIM}]✗[/] [{C.C_DIM}]{r.source}[/] — [{C.C_BLOOD}]{r.error}[/]"))
 
-    console.print(Padding(table, (1, 2)))
-
+    console.print()
     duration = ""
     if engine.end_time and engine.start_time:
         d = engine.end_time - engine.start_time
