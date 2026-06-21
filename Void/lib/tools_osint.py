@@ -95,142 +95,117 @@ def _extract_domain(url):
 # ── EMAIL OSINT ──────────────────────────────────────────────
 
 def tool_email_lookup():
-    from .scanner import email_intel
+    from Void.core.engine import OSINTEngine
     _panel("EMAIL INTELLIGENCE", "Full email investigation (100+ platforms)")
     email = input(f"{_ansi(C_MID)}  Email >> \033[0m").strip()
     if not email: return
-    email_intel(email)
+    engine = OSINTEngine()
+    engine.run_email_scan(email)
+    engine.show_results()
+    engine.save_reports()
+    _pause()
 
 
 def tool_email_validate():
-    from .scanner import email_intel
+    from Void.core.engine import OSINTEngine
     _panel("EMAIL VALIDATE", "Check email registration across platforms")
     email = input(f"{_ansi(C_MID)}  Email >> \033[0m").strip()
     if not email: return
-    email_intel(email)
+    engine = OSINTEngine()
+    engine.run_email_scan(email)
+    engine.show_results()
+    engine.save_reports()
+    _pause()
 
 
 def tool_email_breach():
-    from .scanner import email_intel
+    from Void.core.engine import OSINTEngine
     _panel("EMAIL BREACH CHECK", "Scan email across services + breach data")
     email = input(f"{_ansi(C_MID)}  Email >> \033[0m").strip()
     if not email: return
-    email_intel(email)
+    engine = OSINTEngine()
+    engine.run_email_scan(email)
+    engine.show_results()
+    engine.save_reports()
+    _pause()
 
 
 # ── PHONE OSINT ──────────────────────────────────────────────
 
 def tool_phone_lookup():
-    from .phintel import phone_intel, _exec_panel
-    _exec_panel("PHONE INVESTIGATION", "Full phone number analysis")
+    from Void.core.engine import OSINTEngine
+    _panel("PHONE INTELLIGENCE", "Full phone number analysis")
     phone = input(f"{_ansi(C_MID)}  Phone (+CCXXXXXXXXX) >> \033[0m").strip()
     if not phone: return
-    phone_intel(phone)
+    engine = OSINTEngine()
+    engine.run_phone_scan(phone)
+    engine.show_results()
+    engine.save_reports()
+    _pause()
 
 
 def tool_phone_carrier():
-    from .phintel import _exec_panel, phone_carrier_intel, _pause
-    _exec_panel("PHONE CARRIER", "Carrier identification")
+    from Void.core.engine import OSINTEngine
+    _panel("PHONE CARRIER", "Carrier identification")
     phone = input(f"{_ansi(C_MID)}  Phone (+CCXXXXXXXXX) >> \033[0m").strip()
     if not phone: return
-    phone_carrier_intel(phone)
+    engine = OSINTEngine()
+    engine.run_phone_scan(phone)
+    engine.show_results()
+    engine.save_reports()
     _pause()
 
 
 # ── IP OSINT ─────────────────────────────────────────────────
 
 def tool_ip_geo():
+    from Void.core.engine import OSINTEngine
     _panel("IP GEOLOCATION", "Get geolocation data for an IP address")
     ip = input(f"{_ansi(C_MID)}  IP Address >> \033[0m").strip()
     if not ip: return
-    try:
-        data = _fetch_json(f"http://ip-api.com/json/{ip}?fields=66842623", timeout=8)
-        if data.get("status") == "success":
-            rows = [
-                ("IP", data.get("query", ip)),
-                ("Country", data.get("country", "?")),
-                ("Region", f"{data.get('regionName', '?')} ({data.get('region', '?')})"),
-                ("City", data.get("city", "?")),
-                ("ZIP", data.get("zip", "?")),
-                ("Lat/Lon", f"{data.get('lat', '?')} , {data.get('lon', '?')}"),
-                ("ISP", data.get("isp", "?")),
-                ("ORG", data.get("org", "?")),
-                ("AS", data.get("as", "?")),
-                ("Timezone", data.get("timezone", "?")),
-            ]
-            _show_table(f"IP Geolocation — {ip}", rows)
-        else:
-            console.print(f"[{C_NEON} bold]  [!] {data.get('message', 'Query failed')}")
-    except Exception as e:
-        _error_box("IP Geo", str(e))
+    engine = OSINTEngine()
+    engine.run_ip_scan(ip)
+    engine.show_results()
+    engine.save_reports()
     _pause()
 
 
 def tool_ip_vpn():
+    from Void.core.engine import OSINTEngine
     _panel("IP VPN DETECTION", "Detect VPN/Proxy/Tor on an IP")
     ip = input(f"{_ansi(C_MID)}  IP Address >> \033[0m").strip()
     if not ip: return
-    try:
-        data = _fetch_json(f"https://proxycheck.io/v2/{ip}?vpn=1&asn=1", timeout=10)
-        if data.get("status") == "ok":
-            res = data.get(ip, {})
-            is_proxy = res.get("proxy", "no") == "yes"
-            p_color = C_NEON if is_proxy else "#00FF00"
-            rows = [
-                ("IP", ip),
-                ("Proxy/VPN", f"[{p_color} bold]{res.get('proxy', 'no').upper()}[/]"),
-                ("Type", res.get("type", "N/A")),
-                ("Provider", res.get("provider", "N/A")),
-                ("ASN", res.get("asn", "N/A")),
-                ("Country", f"{res.get('country', 'N/A')} ({res.get('isocode', '??')})"),
-            ]
-            _show_table("VPN Detection", rows)
-        else:
-            console.print(f"[{C_NEON} bold]  [!] {data.get('message', 'Query failed')}")
-    except Exception as e:
-        _error_box("VPN Detect", str(e))
+    engine = OSINTEngine()
+    engine.run_ip_scan(ip)
+    engine.show_results()
+    engine.save_reports()
     _pause()
 
 
 def tool_ip_whois():
+    from Void.core.engine import OSINTEngine
     _panel("IP WHOIS", "WHOIS lookup for IP address")
     ip = input(f"{_ansi(C_MID)}  IP Address >> \033[0m").strip()
     if not ip: return
-    try:
-        from ipwhois import IPWhois
-        obj = IPWhois(ip)
-        res = obj.lookup_rdap(depth=1)
-        rows = [
-            ("IP", ip),
-            ("ASN", f"AS{res.get('asn', '?')}"),
-            ("ASN CIDR", res.get('asn_cidr', '?')),
-            ("ASN Country", res.get('asn_country_code', '?')),
-            ("ASN Registry", res.get('asn_registry', '?')),
-        ]
-        network = res.get("network", {})
-        if network:
-            rows += [
-                ("CIDR", network.get("cidr", "?")),
-                ("Name", network.get("name", "?")),
-                ("Org", network.get("org", "?")),
-                ("Country", network.get("country", "?")),
-            ]
-        _show_table(f"IP WHOIS — {ip}", rows)
-    except ImportError:
-        _error_box("Missing dep", "Install ipwhois: pip install ipwhois")
-    except Exception as e:
-        _error_box("IP WHOIS", str(e))
+    engine = OSINTEngine()
+    engine.run_ip_scan(ip)
+    engine.show_results()
+    engine.save_reports()
     _pause()
 
 
 # ── USERNAME OSINT ───────────────────────────────────────────
 
 def tool_username_search():
-    from .scanner import username_intel
+    from Void.core.engine import OSINTEngine
     _panel("USERNAME SEARCH", "Full username investigation (185+ platforms)")
     u = input(f"{_ansi(C_MID)}  Username >> \033[0m").strip()
     if not u: return
-    username_intel(u)
+    engine = OSINTEngine()
+    engine.run_username_scan(u)
+    engine.show_results()
+    engine.save_reports()
+    _pause()
 
 
 def tool_username_analyze():
@@ -275,80 +250,38 @@ def tool_username_analyze():
 # ── DOMAIN OSINT ─────────────────────────────────────────────
 
 def tool_domain_whois():
+    from Void.core.engine import OSINTEngine
     _panel("DOMAIN WHOIS", "WHOIS lookup for domain")
     d = input(f"{_ansi(C_MID)}  Domain (ex: example.com) >> \033[0m").strip()
     if not d: return
-    try:
-        import whois
-        w = whois.whois(d)
-        rows = [
-            ("Domain", d),
-            ("Registrar", str(w.registrar or "?")),
-            ("Created", str(w.creation_date or "?")),
-            ("Expires", str(w.expiration_date or "?")),
-            ("Updated", str(w.updated_date or "?")),
-            ("Name Servers", ", ".join(w.name_servers or ["?"])),
-            ("Org", str(w.org or w.name or "?")),
-            ("Country", str(w.country or "?")),
-            ("Emails", ", ".join(w.emails or ["?"])),
-        ]
-        _show_table(f"Domain WHOIS — {d}", rows)
-    except ImportError:
-        _error_box("Missing dep", "Install whois: pip install python-whois")
-    except Exception as e:
-        _error_box("WHOIS", str(e))
+    engine = OSINTEngine()
+    engine.run_domain_scan(d)
+    engine.show_results()
+    engine.save_reports()
     _pause()
 
 
 def tool_dns_lookup():
+    from Void.core.engine import OSINTEngine
     _panel("DNS LOOKUP", "DNS record lookup for domain")
     d = input(f"{_ansi(C_MID)}  Domain >> \033[0m").strip()
     if not d: return
-    try:
-        import dns.resolver
-        console.print(Text.from_markup(f"\n[{C_NEON} bold] ┌── DNS Records for : {d}\n"))
-        for qtype in ("A", "AAAA", "MX", "NS", "TXT", "CNAME", "SOA"):
-            try:
-                answers = dns.resolver.resolve(d, qtype, lifetime=5)
-                for rdata in answers:
-                    console.print(f"  [{C_GOLD} bold]{qtype:5}[/]  [{C_WHITE}]{rdata}[/]")
-            except Exception:
-                pass
-    except ImportError:
-        _error_box("Missing dep", "Install dnspython: pip install dnspython")
+    engine = OSINTEngine()
+    engine.run_domain_scan(d)
+    engine.show_results()
+    engine.save_reports()
     _pause()
 
 
 def tool_ssl_cert():
+    from Void.core.engine import OSINTEngine
     _panel("SSL CERTIFICATE", "Fetch SSL certificate info for domain")
     d = input(f"{_ansi(C_MID)}  Domain >> \033[0m").strip()
     if not d: return
-    try:
-        ctx = ssl.create_default_context()
-        with socket.create_connection((d, 443), timeout=8) as sock:
-            with ctx.wrap_socket(sock, server_hostname=d) as ssock:
-                cert = ssock.getpeercert()
-        if cert:
-            subject = dict(cert.get("subject", []))
-            issuer = dict(cert.get("issuer", []))
-            san = cert.get("subjectAltName", [])
-            rows = [
-                ("Domain", d),
-                ("Subject CN", str(subject.get("commonName", "?"))),
-                ("Org", str(subject.get("organizationName", "?"))),
-                ("Issuer CN", str(issuer.get("commonName", "?"))),
-                ("Issuer Org", str(issuer.get("organizationName", "?"))),
-                ("Valid From", str(cert.get("notBefore", "?"))),
-                ("Valid Until", str(cert.get("notAfter", "?"))),
-                ("SAN Count", str(len(san))),
-                ("Serial", str(cert.get("serialNumber", "?"))),
-                ("Version", str(cert.get("version", "?"))),
-            ]
-            _show_table(f"SSL Certificate — {d}", rows)
-        else:
-            console.print(f"[{C_NEON} bold]  [!] No certificate returned")
-    except Exception as e:
-        _error_box("SSL Cert", str(e))
+    engine = OSINTEngine()
+    engine.run_domain_scan(d)
+    engine.show_results()
+    engine.save_reports()
     _pause()
 
 
