@@ -13,11 +13,8 @@ from rich.panel import Panel
 from rich.padding import Padding
 from rich import box
 
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from Void.lib import constants as C
-from Void.lib.void_common import console, error_box, ansi_hex
+from lib import constants as C
+from lib.void_common import console, error_box, ansi_hex
 
 
 class ScanResult:
@@ -85,7 +82,7 @@ class OSINTEngine:
         console.print(f"\r  [{C.C_GOLD}]{current}/{total}[/] {bar} [{C.C_WHITE}]{int(pct*100)}%[/]", end="")
 
     def run_email_scan(self, email):
-        from Void.modules.email.scanner import EmailScanner
+        from modules.email.scanner import EmailScanner
         self.target = email
         self.scan_type = "email"
         self.start_time = time.time()
@@ -123,7 +120,7 @@ class OSINTEngine:
         return self.results
 
     def run_username_scan(self, username):
-        from Void.modules.username.scanner import UsernameScanner
+        from modules.username.scanner import UsernameScanner
         self.target = username
         self.scan_type = "username"
         self.start_time = time.time()
@@ -160,7 +157,7 @@ class OSINTEngine:
         return self.results
 
     def run_phone_scan(self, phone):
-        from Void.modules.phone.scanner import PhoneScanner
+        from modules.phone.scanner import PhoneScanner
         self.target = phone
         self.scan_type = "phone"
         self.start_time = time.time()
@@ -197,7 +194,7 @@ class OSINTEngine:
         return self.results
 
     def run_ip_scan(self, ip):
-        from Void.modules.ip.scanner import IPScanner
+        from modules.ip.scanner import IPScanner
         self.target = ip
         self.scan_type = "ip"
         self.start_time = time.time()
@@ -234,7 +231,7 @@ class OSINTEngine:
         return self.results
 
     def run_domain_scan(self, domain):
-        from Void.modules.domain.scanner import DomainScanner
+        from modules.domain.scanner import DomainScanner
         self.target = domain
         self.scan_type = "domain"
         self.start_time = time.time()
@@ -272,9 +269,9 @@ class OSINTEngine:
         return self.results
 
     def show_results(self):
-        from Void.modules.report import show_results_panel
+        from modules.report import show_results_panel
         show_results_panel(self)
 
     def save_reports(self):
-        from Void.modules.report import save_all_reports
+        from modules.report import save_all_reports
         return save_all_reports(self)

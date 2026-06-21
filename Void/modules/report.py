@@ -9,11 +9,8 @@ from rich.panel import Panel
 from rich.padding import Padding
 from rich import box
 
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from Void.lib import constants as C
-from Void.lib.void_common import console
+from lib import constants as C
+from lib.void_common import console
 
 
 def show_results_panel(engine):

@@ -95,7 +95,7 @@ def _extract_domain(url):
 # ── EMAIL OSINT ──────────────────────────────────────────────
 
 def tool_email_lookup():
-    from Void.core.engine import OSINTEngine
+    from core.engine import OSINTEngine
     _panel("EMAIL INTELLIGENCE", "Full email investigation (100+ platforms)")
     email = input(f"{_ansi(C_MID)}  Email >> \033[0m").strip()
     if not email: return
@@ -107,7 +107,7 @@ def tool_email_lookup():
 
 
 def tool_email_validate():
-    from Void.core.engine import OSINTEngine
+    from core.engine import OSINTEngine
     _panel("EMAIL VALIDATE", "Check email registration across platforms")
     email = input(f"{_ansi(C_MID)}  Email >> \033[0m").strip()
     if not email: return
@@ -119,7 +119,7 @@ def tool_email_validate():
 
 
 def tool_email_breach():
-    from Void.core.engine import OSINTEngine
+    from core.engine import OSINTEngine
     _panel("EMAIL BREACH CHECK", "Scan email across services + breach data")
     email = input(f"{_ansi(C_MID)}  Email >> \033[0m").strip()
     if not email: return
@@ -133,7 +133,7 @@ def tool_email_breach():
 # ── PHONE OSINT ──────────────────────────────────────────────
 
 def tool_phone_lookup():
-    from Void.core.engine import OSINTEngine
+    from core.engine import OSINTEngine
     _panel("PHONE INTELLIGENCE", "Full phone number analysis")
     phone = input(f"{_ansi(C_MID)}  Phone (+CCXXXXXXXXX) >> \033[0m").strip()
     if not phone: return
@@ -145,7 +145,7 @@ def tool_phone_lookup():
 
 
 def tool_phone_carrier():
-    from Void.core.engine import OSINTEngine
+    from core.engine import OSINTEngine
     _panel("PHONE CARRIER", "Carrier identification")
     phone = input(f"{_ansi(C_MID)}  Phone (+CCXXXXXXXXX) >> \033[0m").strip()
     if not phone: return
@@ -159,7 +159,7 @@ def tool_phone_carrier():
 # ── IP OSINT ─────────────────────────────────────────────────
 
 def tool_ip_geo():
-    from Void.core.engine import OSINTEngine
+    from core.engine import OSINTEngine
     _panel("IP GEOLOCATION", "Get geolocation data for an IP address")
     ip = input(f"{_ansi(C_MID)}  IP Address >> \033[0m").strip()
     if not ip: return
@@ -171,7 +171,7 @@ def tool_ip_geo():
 
 
 def tool_ip_vpn():
-    from Void.core.engine import OSINTEngine
+    from core.engine import OSINTEngine
     _panel("IP VPN DETECTION", "Detect VPN/Proxy/Tor on an IP")
     ip = input(f"{_ansi(C_MID)}  IP Address >> \033[0m").strip()
     if not ip: return
@@ -183,7 +183,7 @@ def tool_ip_vpn():
 
 
 def tool_ip_whois():
-    from Void.core.engine import OSINTEngine
+    from core.engine import OSINTEngine
     _panel("IP WHOIS", "WHOIS lookup for IP address")
     ip = input(f"{_ansi(C_MID)}  IP Address >> \033[0m").strip()
     if not ip: return
@@ -197,7 +197,7 @@ def tool_ip_whois():
 # ── USERNAME OSINT ───────────────────────────────────────────
 
 def tool_username_search():
-    from Void.core.engine import OSINTEngine
+    from core.engine import OSINTEngine
     _panel("USERNAME SEARCH", "Full username investigation (185+ platforms)")
     u = input(f"{_ansi(C_MID)}  Username >> \033[0m").strip()
     if not u: return
@@ -250,7 +250,7 @@ def tool_username_analyze():
 # ── DOMAIN OSINT ─────────────────────────────────────────────
 
 def tool_domain_whois():
-    from Void.core.engine import OSINTEngine
+    from core.engine import OSINTEngine
     _panel("DOMAIN WHOIS", "WHOIS lookup for domain")
     d = input(f"{_ansi(C_MID)}  Domain (ex: example.com) >> \033[0m").strip()
     if not d: return
@@ -262,7 +262,7 @@ def tool_domain_whois():
 
 
 def tool_dns_lookup():
-    from Void.core.engine import OSINTEngine
+    from core.engine import OSINTEngine
     _panel("DNS LOOKUP", "DNS record lookup for domain")
     d = input(f"{_ansi(C_MID)}  Domain >> \033[0m").strip()
     if not d: return
@@ -274,7 +274,7 @@ def tool_dns_lookup():
 
 
 def tool_ssl_cert():
-    from Void.core.engine import OSINTEngine
+    from core.engine import OSINTEngine
     _panel("SSL CERTIFICATE", "Fetch SSL certificate info for domain")
     d = input(f"{_ansi(C_MID)}  Domain >> \033[0m").strip()
     if not d: return
