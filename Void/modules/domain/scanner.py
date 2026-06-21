@@ -1,4 +1,4 @@
-"""Domain Intelligence — wrapper for theHarvester + sublist3r."""
+"""Domain Intelligence — wrapper for theHarvester + amass + subfinder + whatweb."""
 import json
 import re
 import socket
@@ -82,8 +82,8 @@ class DomainScanner:
     def theharvester_scan(self, domain):
         try:
             proc = subprocess.run(
-                ["theHarvester", "-d", domain, "-b", "all", "-f", "/dev/stdout"],
-                capture_output=True, text=True, timeout=60
+                ["theHarvester", "-d", domain, "-b", "bing,yahoo,duckduckgo", "-f", "/dev/stdout"],
+                capture_output=True, text=True, timeout=120
             )
             output = proc.stdout
             emails = []
@@ -147,33 +147,52 @@ class DomainScanner:
         )
 
     def detect_tech(self, domain):
-        url = f"https://{domain}"
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=10) as r:
-                headers_str = str(r.headers)
-                body = r.read(1024).decode("utf-8", errors="ignore").lower()
-            combined = headers_str.lower() + body
-            detected = []
-            patterns = [
-                ("WordPress", r"/wp-content/|/wp-admin/"),
-                ("nginx", r"nginx"),
-                ("Apache", r"Apache"),
-                ("Cloudflare", r"cloudflare"),
-                ("PHP", r"PHP|Zend"),
-                ("Python", r"Python|Django|Flask"),
-                ("Node.js", r"Node\.?[Jj]s|Express"),
-                ("Java", r"Java|Tomcat"),
-                ("React", r"react|__NEXT_DATA__"),
-            ]
-            for name, pattern in patterns:
-                if re.search(pattern, combined, re.I):
-                    detected.append(name)
-            return ScanResult(
-                source="Tech Detect",
-                category="technology",
-                status="found" if detected else "none",
-                data={"technologies": detected, "count": len(detected)},
+            proc = subprocess.run(
+                ["whatweb", "--color=never", "-a", "3", f"https://{domain}"],
+                capture_output=True, text=True, timeout=30
             )
+            output = proc.stdout
+            technologies = []
+            for match in re.finditer(r'\[([^\]]+)\]', output):
+                tech = match.group(1)
+                if tech and tech not in ("200 OK", "301 Moved"):
+                    technologies.append(tech)
+            if not technologies:
+                for line in output.split(","):
+                    line = line.strip()
+                    if line and not line.startswith("http") and not line.startswith("["):
+                        technologies.append(line.split(":")[0].strip())
+            return ScanResult(
+                source="WhatWeb",
+                category="technology",
+                status="found" if technologies else "none",
+                data={"technologies": technologies[:15], "count": len(technologies)},
+            )
+        except FileNotFoundError:
+            return ScanResult(source="WhatWeb", category="technology", status="error", error="whatweb not installed")
         except Exception as e:
-            return ScanResult(source="Tech Detect", category="technology", status="error", error=str(e))
+            return ScanResult(source="WhatWeb", category="technology", status="error", error=str(e))
+
+    def amass_enum(self, domain):
+        try:
+            proc = subprocess.run(
+                ["amass", "enum", "-passive", "-d", domain, "-timeout", "5"],
+                capture_output=True, text=True, timeout=60
+            )
+            output = proc.stdout
+            subdomains = []
+            for line in output.split("\n"):
+                line = line.strip()
+                if line and "." in line and not line.startswith("["):
+                    subdomains.append(line)
+            return ScanResult(
+                source="Amass",
+                category="subdomains",
+                status="found" if subdomains else "none",
+                data={"subdomains": subdomains[:50], "count": len(subdomains)},
+            )
+        except FileNotFoundError:
+            return ScanResult(source="Amass", category="subdomains", status="error", error="amass not installed: apt install amass")
+        except Exception as e:
+            return ScanResult(source="Amass", category="subdomains", status="error", error=str(e))

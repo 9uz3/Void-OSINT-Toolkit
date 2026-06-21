@@ -1,4 +1,4 @@
-"""Username Intelligence — wrapper for sherlock + maigret."""
+"""Username Intelligence — wrapper for sherlock + maigret + ghunt + nexfil."""
 import json
 import subprocess
 
@@ -107,3 +107,30 @@ class UsernameScanner:
             status="found",
             data={"search_links": links, "count": len(links)},
         )
+
+    def nexfil_scan(self, username):
+        try:
+            proc = subprocess.run(
+                ["nexfil", "-q", "-L", "50", username],
+                capture_output=True, text=True, timeout=60
+            )
+            output = proc.stdout
+            found = []
+            for line in output.split("\n"):
+                line = line.strip()
+                if "[+]" in line:
+                    parts = line.split("[+]", 1)
+                    if len(parts) == 2:
+                        site = parts[1].strip()
+                        if site:
+                            found.append({"service": site.split(":")[0] if ":" in site else site, "url": site})
+            return ScanResult(
+                source="Nexfil",
+                category="email_by_username",
+                status="found" if found else "none",
+                data={"emails": found, "count": len(found)},
+            )
+        except FileNotFoundError:
+            return ScanResult(source="Nexfil", category="email_by_username", status="error", error="nexfil not installed: pip install nexfil")
+        except Exception as e:
+            return ScanResult(source="Nexfil", category="email_by_username", status="error", error=str(e))

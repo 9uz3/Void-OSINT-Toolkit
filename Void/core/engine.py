@@ -133,7 +133,7 @@ class OSINTEngine:
         steps = [
             ("Sherlock platform scan", scanner.sherlock_scan),
             ("Maigret cross-platform check", scanner.maigret_scan),
-            ("WhatsMyName web search", scanner.whatsmyname_scan),
+            ("Nexfil email discovery", scanner.nexfil_scan),
             ("Social media presence check", scanner.social_check),
         ]
 
@@ -245,8 +245,9 @@ class OSINTEngine:
             ("WHOIS lookup", scanner.whois_lookup),
             ("DNS records", scanner.dns_records),
             ("SSL certificate", scanner.ssl_check),
-            ("Subdomain enumeration", scanner.enumerate_subdomains),
-            ("Web technology detection", scanner.detect_tech),
+            ("theHarvester scan", scanner.theharvester_scan),
+            ("Amass subdomain enum", scanner.amass_enum),
+            ("WhatWeb tech detect", scanner.detect_tech),
         ]
 
         total = len(steps)
