@@ -1,9 +1,6 @@
-"""Username Intelligence — real OSINT tools."""
+"""Username Intelligence — wrapper for sherlock + maigret."""
 import json
 import subprocess
-import urllib.parse
-import urllib.request
-import urllib.error
 
 from core.engine import ScanResult
 
@@ -19,57 +16,51 @@ class UsernameScanner:
             found = []
             for line in output.split("\n"):
                 line = line.strip()
-                if line.startswith("[+") or "Claimed:" in line:
+                if "[+" in line:
                     parts = line.split(":", 1)
                     if len(parts) == 2:
-                        site = parts[0].replace("[+]", "").strip()
+                        site = parts[0].replace("[+]", "").replace("[", "").replace("]", "").strip()
                         url = parts[1].strip()
                         if site and url:
-                            found.append(f"{site}: {url}")
-            if found:
-                return ScanResult(
-                    source="Sherlock",
-                    category="platforms",
-                    status="found",
-                    data={"found_profiles": "\n".join(found), "count": str(len(found))},
-                )
-            return ScanResult(source="Sherlock", category="platforms", status="none", data={"count": "0"})
+                            found.append({"service": site, "url": url})
+            return ScanResult(
+                source="Sherlock",
+                category="platforms",
+                status="found" if found else "none",
+                data={"profiles": found, "count": len(found)},
+            )
         except FileNotFoundError:
-            return ScanResult(source="Sherlock", category="platforms", status="error", error="sherlock not installed")
+            return ScanResult(source="Sherlock", category="platforms", status="error", error="sherlock not installed: pip install sherlock-project")
         except Exception as e:
             return ScanResult(source="Sherlock", category="platforms", status="error", error=str(e))
 
     def maigret_scan(self, username):
-        sites = [
-            ("GitHub", "https://github.com/{u}"),
-            ("Twitter/X", "https://x.com/{u}"),
-            ("Reddit", "https://reddit.com/user/{u}"),
-            ("Instagram", "https://instagram.com/{u}"),
-            ("Twitch", "https://twitch.tv/{u}"),
-            ("YouTube", "https://youtube.com/@{u}"),
-            ("Telegram", "https://t.me/{u}"),
-            ("Medium", "https://medium.com/@{u}"),
-            ("Pinterest", "https://pinterest.com/{u}"),
-            ("TikTok", "https://tiktok.com/@{u}"),
-        ]
-        found = []
-        for name, url_template in sites:
-            url = url_template.format(u=username)
+        try:
+            proc = subprocess.run(
+                ["maigret", username, "--json", "-o", "/dev/stdout"],
+                capture_output=True, text=True, timeout=90
+            )
+            output = proc.stdout
+            found = []
             try:
-                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-                with urllib.request.urlopen(req, timeout=5) as r:
-                    if r.getcode() == 200:
-                        body = r.read(1000).decode("utf-8", errors="ignore").lower()
-                        if "not found" not in body and "does not exist" not in body and "no user" not in body:
-                            found.append(f"{name}: {url}")
-            except Exception:
-                pass
-        return ScanResult(
-            source="Maigret",
-            category="platforms",
-            status="found" if found else "none",
-            data={"found_profiles": "\n".join(found) if found else "none found", "count": str(len(found))},
-        )
+                data = json.loads(output)
+                for site, info in data.items():
+                    if isinstance(info, dict) and info.get("url_user"):
+                        found.append({"service": site, "url": info["url_user"]})
+            except json.JSONDecodeError:
+                for line in output.split("\n"):
+                    if "http" in line.lower() and ("found" in line.lower() or "+" in line):
+                        found.append({"service": line.split()[0] if line.split() else "?", "url": line.strip()})
+            return ScanResult(
+                source="Maigret",
+                category="platforms",
+                status="found" if found else "none",
+                data={"profiles": found, "count": len(found)},
+            )
+        except FileNotFoundError:
+            return ScanResult(source="Maigret", category="platforms", status="error", error="maigret not installed: pip install maigret")
+        except Exception as e:
+            return ScanResult(source="Maigret", category="platforms", status="error", error=str(e))
 
     def whatsmyname_scan(self, username):
         sites = [
@@ -83,6 +74,7 @@ class UsernameScanner:
             ("Keybase", "https://keybase.io/{u}"),
             ("Steam", "https://steamcommunity.com/id/{u}"),
         ]
+        import urllib.request
         found = []
         for name, url_template in sites:
             url = url_template.format(u=username)
@@ -92,25 +84,26 @@ class UsernameScanner:
                     if r.getcode() == 200:
                         body = r.read(1000).decode("utf-8", errors="ignore").lower()
                         if "not found" not in body and "does not exist" not in body:
-                            found.append(f"{name}: {url}")
+                            found.append({"service": name, "url": url})
             except Exception:
                 pass
         return ScanResult(
             source="WhatsMyName",
             category="web",
             status="found" if found else "none",
-            data={"found_profiles": "\n".join(found) if found else "none found", "count": str(len(found))},
+            data={"profiles": found, "count": len(found)},
         )
 
     def social_check(self, username):
+        import urllib.parse
         links = [
-            ("Google", f"https://google.com/search?q={urllib.parse.quote(username)}"),
-            ("Twitter", f"https://twitter.com/search?q={urllib.parse.quote(username)}"),
-            ("Reddit", f"https://reddit.com/search?q={urllib.parse.quote(username)}"),
+            {"service": "Google", "url": f"https://google.com/search?q={urllib.parse.quote(username)}"},
+            {"service": "Twitter", "url": f"https://twitter.com/search?q={urllib.parse.quote(username)}"},
+            {"service": "Reddit", "url": f"https://reddit.com/search?q={urllib.parse.quote(username)}"},
         ]
         return ScanResult(
             source="Social Search",
             category="social",
             status="found",
-            data={"search_links": "\n".join(f"{n}: {u}" for n, u in links)},
+            data={"search_links": links, "count": len(links)},
         )

@@ -1,7 +1,6 @@
-"""Phone Intelligence — scanner module."""
+"""Phone Intelligence — wrapper for PhoneInfoga."""
 import json
-import phonenumbers
-from phonenumbers import carrier, geocoder, timezone, PhoneNumberType
+import subprocess
 
 from core.engine import ScanResult
 
@@ -9,6 +8,9 @@ from core.engine import ScanResult
 class PhoneScanner:
     def validate_number(self, phone):
         try:
+            import phonenumbers
+            from phonenumbers import carrier, geocoder, timezone, PhoneNumberType
+
             pn = phonenumbers.parse(phone, None)
             is_valid = phonenumbers.is_valid_number(pn)
             is_possible = phonenumbers.is_possible_number(pn)
@@ -21,7 +23,6 @@ class PhoneScanner:
                 PhoneNumberType.FIXED_LINE: "Landline",
                 PhoneNumberType.VOIP: "VoIP",
                 PhoneNumberType.TOLL_FREE: "Toll-Free",
-                PhoneNumberType.PREMIUM_RATE: "Premium Rate",
                 PhoneNumberType.UNKNOWN: "Unknown",
             }
             num_type = type_map.get(phonenumbers.number_type(pn), "Unknown")
@@ -45,19 +46,36 @@ class PhoneScanner:
 
     def identify_carrier(self, phone):
         try:
-            pn = phonenumbers.parse(phone, None)
-            c = carrier.name_for_number(pn, "en") or "Unknown"
-            return ScanResult(
-                source="Carrier",
-                category="carrier",
-                status="found" if c != "Unknown" else "none",
-                data={"carrier": c},
+            proc = subprocess.run(
+                ["phoneinfoga", "scan", "-n", phone, "-o", "json"],
+                capture_output=True, text=True, timeout=20
             )
+            output = proc.stdout
+            try:
+                data = json.loads(output)
+                return ScanResult(
+                    source="PhoneInfoga",
+                    category="carrier",
+                    status="found",
+                    data={"raw_output": data},
+                )
+            except json.JSONDecodeError:
+                lines = [l.strip() for l in output.split("\n") if l.strip()]
+                return ScanResult(
+                    source="PhoneInfoga",
+                    category="carrier",
+                    status="found" if lines else "none",
+                    data={"output": lines},
+                )
+        except FileNotFoundError:
+            return ScanResult(source="PhoneInfoga", category="carrier", status="error", error="phoneinfoga not installed: pip install phoneinfoga")
         except Exception as e:
-            return ScanResult(source="Carrier", category="carrier", status="error", error=str(e))
+            return ScanResult(source="PhoneInfoga", category="carrier", status="error", error=str(e))
 
     def geolocate(self, phone):
         try:
+            import phonenumbers
+            from phonenumbers import geocoder, timezone
             pn = phonenumbers.parse(phone, None)
             country = geocoder.description_for_number(pn, "en") or "Unknown"
             tz_list = timezone.time_zones_for_number(pn) or []
@@ -65,16 +83,14 @@ class PhoneScanner:
                 source="Geocoder",
                 category="location",
                 status="found" if country != "Unknown" else "none",
-                data={
-                    "country": country,
-                    "timezone": ", ".join(tz_list) if tz_list else "Unknown",
-                },
+                data={"country": country, "timezone": ", ".join(tz_list)},
             )
         except Exception as e:
             return ScanResult(source="Geocoder", category="location", status="error", error=str(e))
 
     def assess_risk(self, phone):
         try:
+            import phonenumbers
             pn = phonenumbers.parse(phone, None)
             is_valid = phonenumbers.is_valid_number(pn)
             risk = 0

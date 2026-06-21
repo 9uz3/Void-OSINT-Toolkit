@@ -1,17 +1,25 @@
 # VOID OSINT TOOLKIT
 
-**Terminal OSINT framework · 32 tools · 12 categories · Rich dashboard**
+**Real OSINT framework · Wraps actual tools · Standalone · No paid APIs**
 
 ```
-╔═══════════════════════════════════════════════════════════════════════╗
+╔══════════════════════════════════════════════════════════════╗
 ║██╗   ██╗ ██████╗ ██╗██████╗     ██████╗ ███████╗██╗███╗   ██╗████████╗║
 ║██║   ██║██╔═══██╗██║██╔══██╗   ██╔═══██╗██╔════╝██║████╗  ██║╚══██╔══╝║
 ║██║   ██║██║   ██║██║██║  ██║   ██║   ██║███████╗██║██╔██╗ ██║   ██║   ║
 ║╚██╗ ██╔╝██║   ██║██║██║  ██║   ██║   ██║╚════██║██║██║╚██╗██║   ██║   ║
 ║ ╚████╔╝ ╚██████╔╝██║██████╔╝   ╚██████╔╝███████║██║██║ ╚████║   ██║   ║
 ║  ╚═══╝   ╚═════╝ ╚═╝╚═════╝     ╚═════╝ ╚══════╝╚═╝╚═╝  ╚═══╝   ╚═╝   ║
-╚═══════════════════════════════════════════════════════════════════════╝
+╚══════════════════════════════════════════════════════════════╝
 ```
+
+---
+
+## What This Is
+
+VOID OSINT is a **wrapper framework** — it does NOT reimplement OSINT tools. It orchestrates real, proven tools and presents results in a unified terminal interface.
+
+**No paid APIs. No commercial SaaS. No mock data. Pure local execution.**
 
 ---
 
@@ -26,13 +34,6 @@ bash install.sh
 voidosint
 ```
 
-Or install system-wide (requires root):
-
-```bash
-sudo bash install.sh --system
-voidosint
-```
-
 ### Windows
 
 ```batch
@@ -42,112 +43,77 @@ install.bat
 voidosint
 ```
 
-### Run directly (no install)
+### Run directly
 
 ```bash
-# Linux/macOS
 ./voidosint
-
-# Windows
-voidosint.bat
 ```
-
-First run auto-installs Python dependencies. No venv needed.
 
 ---
 
 ## Requirements
 
-- **Python 3.8+** (Python 3.10+ recommended)
-- **Terminal**: 100x30 minimum size
-- **OS**: Linux, macOS, Windows 10/11, Kali Linux, Ubuntu, Debian, WSL
+- Python 3.8+ (3.10+ recommended)
+- Terminal: 100x30 minimum
+- OS: Linux, macOS, Windows 10/11, Kali, Ubuntu, Debian, WSL
 
 ---
 
-## What It Does
+## Integrated Tools
 
-VOID OSINT is a modular OSINT investigation framework that runs entirely in your terminal. It wraps multiple OSINT tools behind a visual interface — you never need to type raw commands.
-
-| Category | Tools | Description |
-|----------|-------|-------------|
-| **EMAIL** | Lookup, Validate, Breach Check | Scan 90+ platforms for email presence |
-| **PHONE** | Number Info, Carrier ID | Parse, validate, and identify phone numbers |
-| **IP / NET** | Geolocation, VPN Detection, WHOIS | Investigate IP addresses and network data |
-| **USERNAME** | Cross-Platform Search, Pattern Analysis | Find usernames across 185+ platforms |
-| **DOMAIN** | WHOIS, DNS Records, SSL Certificates | Domain investigation and infrastructure |
-| **SOCIAL** | Profile Search, Social Scan | Search social media platforms |
-| **BREACH** | Breach Check, Breach Search | Check for compromised credentials |
-| **WEB** | Tech Detection, Headers, Robots.txt | Website technology fingerprinting |
-| **DORK** | Google Dork Generator, Search | Generate and execute Google dorks |
-| **IMAGE** | EXIF Viewer, Image Metadata | Extract image metadata and EXIF data |
+| Tool | Function | Category |
+|------|----------|----------|
+| **Holehe** | Email enumeration — finds services linked to email | Email |
+| **Sherlock** | Username enumeration across 400+ platforms | Username |
+| **Maigret** | Username enumeration — 2500+ sites, advanced filtering | Username |
+| **PhoneInfoga** | Phone number investigation | Phone |
+| **theHarvester** | Email, host, subdomain harvesting from public sources | Domain |
+| **Sublist3r** | Subdomain enumeration | Domain |
+| **ExifTool** | Metadata extraction from files | Image |
+| **h8mail** | Breach correlation without paid APIs | Breach |
+| **SpiderFoot** | Automated OSINT (optional) | Framework |
+| **Recon-ng** | Reconnaissance framework (optional) | Framework |
 
 ---
 
-## Controls
+## Usage
+
+```bash
+voidosint              # Launch dashboard
+voidosint doctor       # System diagnostics
+voidosint update       # Install/update dependencies
+voidosint modules      # List available modules
+```
+
+### Controls
 
 | Key | Action |
 |-----|--------|
-| `↑ ↓` | Navigate categories (sidebar) |
-| `← →` | Navigate tools (grid) |
-| `Enter` | Select / Launch tool |
-| `F` | Fuzzy search across all tools |
-| `Q` / `Ctrl+C` | Quit |
+| `↑ ↓` | Navigate categories |
+| `← →` | Navigate tools |
+| `Enter` | Select / Launch |
+| `F` | Fuzzy search |
+| `Q` | Quit |
 
 ---
 
-## Configuration
+## How It Works
 
-### First-Run Wizard
-
-On first launch, VOID OSINT presents a setup wizard:
-
-1. **Language**: Choose Français or English
-2. **Theme**: Pick from 12 color themes + rainbow
-3. **Username**: Set your operator name
-4. **Boot Animation**: Enable or skip cinematic boot
-
-### Manual Config
-
-Edit `Void/config/settings.json`:
-
-```json
-{
-  "language": "en",
-  "theme": "white",
-  "username": "Operator",
-  "skip_boot": false,
-  "setup_complete": true
-}
+```
+User Input → VOID Engine → Real OSINT Tools → JSON Results → Terminal UI
+                                    │
+                     ┌──────────────┼──────────────┐
+                     │              │              │
+                   holehe        sherlock      theHarvester
+                   maigret       phoneinfoga   sublist3r
+                   h8mail        exiftool      ...
 ```
 
-### Available Themes
-
-| Theme | Color |
-|-------|-------|
-| red | Rouge / Red |
-| green | Vert / Green |
-| blue | Bleu / Blue |
-| yellow | Jaune / Yellow |
-| purple | Violet / Purple |
-| cyan | Cyan |
-| orange | Orange |
-| pink | Rose / Pink |
-| lime | Lime |
-| white | Blanc / White |
-| rose | Rose vif |
-| gold | Or / Gold |
-| rainbow | Arc-en-ciel |
-
----
-
-## Commands
-
-```bash
-voidosint              # Launch the dashboard
-voidosint doctor       # System diagnostics
-voidosint update       # Install/update dependencies
-voidosint modules      # List available OSINT modules
-```
+Each module is a **wrapper** that:
+1. Calls the real tool via subprocess
+2. Parses the output
+3. Returns structured JSON
+4. The UI displays results
 
 ---
 
@@ -155,58 +121,54 @@ voidosint modules      # List available OSINT modules
 
 ```
 Void-OSINT-Toolkit/
-├── voidosint              # Linux launcher
-├── voidosint.bat          # Windows launcher
-├── install.sh             # Linux installer
-├── install.bat            # Windows installer
+├── voidosint              # Launcher
+├── install.sh / .bat      # Installers
 ├── Void/
 │   ├── main.py            # Entry point
-│   ├── requirements.txt   # Python dependencies
-│   ├── config/
-│   │   └── settings.json  # User configuration
-│   ├── data/
-│   │   └── reports/       # Scan reports (JSON + TXT)
-│   └── lib/
-│       ├── entry.py       # Initialization
-│       ├── router.py      # Main dashboard
-│       ├── ui.py          # Card rendering
-│       ├── pages.py       # Page definitions
-│       ├── boot.py        # Cinematic boot animation
-│       ├── constants.py   # Colors, themes, paths
-│       ├── config.py      # Settings management
-│       ├── setup.py       # First-run wizard
-│       ├── scanner.py     # Email/Username scanner
-│       ├── tools_osint.py # 24 OSINT tools
-│       ├── phintel.py     # Phone intelligence
-│       ├── search.py      # Fuzzy search
-│       └── deps.py        # Dependency manager
+│   ├── requirements.txt   # All dependencies
+│   ├── core/
+│   │   └── engine.py      # OSINT orchestration engine
+│   ├── modules/
+│   │   ├── report.py      # Report generation (TXT)
+│   │   ├── email/scanner.py   # → holehe wrapper
+│   │   ├── username/scanner.py # → sherlock/maigret wrapper
+│   │   ├── phone/scanner.py   # → phoneinfoga wrapper
+│   │   ├── ip/scanner.py      # → ip-api + proxycheck
+│   │   └── domain/scanner.py  # → theHarvester + sublist3r
+│   ├── lib/               # UI, config, constants
+│   └── data/reports/      # Generated reports
 ```
 
 ---
 
 ## Reports
 
-Every scan generates reports in `Void/data/reports/`:
+Every scan generates a TXT report with:
+- Target
+- Date and time
+- All findings from each tool
 
-- **JSON** — structured data for programmatic use
-- **TXT** — human-readable format
+Reports saved to `Void/data/reports/`.
 
-Example filenames:
-```
-email_user_at_gmail_com_20260620_212158.json
-username_john_20260620_212041.txt
-phone_5511999998888_20260620_213419.json
-```
+---
+
+## Philosophy
+
+> "Don't reinvent the wheel — orchestrate the best wheels."
+
+VOID OSINT uses mature, community-proven tools:
+- **Holehe** for email enumeration (not a custom implementation)
+- **Sherlock/Maigret** for username lookup (not HTTP probes)
+- **theHarvester** for domain recon (not a custom scraper)
+- **PhoneInfoga** for phone analysis (not a regex parser)
+
+The framework is the **glue** — the tools do the real work.
 
 ---
 
 ## Disclaimer
 
-This tool is for **educational and authorized security testing purposes only**.
-
-Users are responsible for ensuring they have proper authorization before running any investigation. The authors are not responsible for misuse of this tool.
-
-See [DISCLAIMER.md](DISCLAIMER.md) for full details.
+For educational and authorized security testing purposes only. Users are responsible for proper authorization. See [DISCLAIMER.md](DISCLAIMER.md).
 
 ---
 
@@ -214,7 +176,7 @@ See [DISCLAIMER.md](DISCLAIMER.md) for full details.
 
 - **Author**: [9uz3](https://github.com/9uz3)
 - **Community**: [Void](https://discord.gg/esXFX6gkq)
-- **Built with**: [Rich](https://github.com/Textualize/rich), [user-scanner](https://github.com/user-scanner/user-scanner)
+- **Tools**: [Holehe](https://github.com/megadose/holehe), [Sherlock](https://github.com/sherlock-project/sherlock), [Maigret](https://github.com/soxoj/maigret), [theHarvester](https://github.com/laramies/theHarvester), [PhoneInfoga](https://github.com/sundowndev/PhoneInfoga)
 
 ---
 

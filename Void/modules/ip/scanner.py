@@ -1,4 +1,4 @@
-"""IP Intelligence — scanner module."""
+"""IP Intelligence — wrapper for ip-api + proxycheck."""
 import json
 import socket
 import urllib.request
@@ -23,13 +23,12 @@ class IPScanner:
                         "country": data.get("country", "?"),
                         "region": data.get("regionName", "?"),
                         "city": data.get("city", "?"),
-                        "zip": data.get("zip", "?"),
-                        "lat": data.get("lat", "?"),
-                        "lon": data.get("lon", "?"),
                         "isp": data.get("isp", "?"),
                         "org": data.get("org", "?"),
                         "as": data.get("as", "?"),
                         "timezone": data.get("timezone", "?"),
+                        "lat": str(data.get("lat", "?")),
+                        "lon": str(data.get("lon", "?")),
                     },
                     url=url,
                 )
@@ -76,7 +75,6 @@ class IPScanner:
                     "asn": f"AS{res.get('asn', '?')}",
                     "asn_cidr": res.get("asn_cidr", "?"),
                     "asn_country": res.get("asn_country_code", "?"),
-                    "asn_registry": res.get("asn_registry", "?"),
                     "cidr": network.get("cidr", "?"),
                     "name": network.get("name", "?"),
                     "org": network.get("org", "?"),
@@ -94,8 +92,7 @@ class IPScanner:
             try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.settimeout(1)
-                result = s.connect_ex((ip, port))
-                if result == 0:
+                if s.connect_ex((ip, port)) == 0:
                     open_ports.append(port)
                 s.close()
             except Exception:
@@ -104,8 +101,5 @@ class IPScanner:
             source="Port Scan",
             category="ports",
             status="found" if open_ports else "none",
-            data={
-                "open_ports": ", ".join(str(p) for p in open_ports) if open_ports else "none found",
-                "ports_scanned": ", ".join(str(p) for p in common),
-            },
+            data={"open_ports": open_ports, "scanned": common},
         )

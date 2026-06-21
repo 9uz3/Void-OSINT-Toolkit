@@ -3,9 +3,7 @@ import os
 from datetime import datetime
 
 from rich.text import Text
-from rich.table import Table
 from rich.panel import Panel
-from rich.padding import Padding
 from rich import box
 
 from lib import constants as C
@@ -33,17 +31,7 @@ def show_results_panel(engine):
         if not r.is_success():
             continue
         console.print(Text.from_markup(f"  [{C.C_NEON}]✔[/] [{C.C_GOLD}]{r.source}[/] found:"))
-        for k, v in r.data.items():
-            v_str = str(v)
-            if v_str in ("none", "none found", "N/A", "Unknown", "", "0", "False"):
-                continue
-            if "\n" in v_str:
-                for line in v_str.split("\n"):
-                    line = line.strip()
-                    if line:
-                        console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{line}[/]")
-            else:
-                console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{k}:[/] [{C.C_WHITE}]{v_str}[/]")
+        _print_data(r.data, r.url)
 
     errors = [r for r in engine.results if r.error]
     if errors:
@@ -60,6 +48,29 @@ def show_results_panel(engine):
         f"  [{C.C_DIM}]Scan completed: {len(engine.results)} checks{duration}[/]"
     ))
     console.print()
+
+
+def _print_data(data, url=None):
+    for k, v in data.items():
+        if isinstance(v, list):
+            for item in v:
+                if isinstance(item, dict):
+                    service = item.get("service", item.get("name", "?"))
+                    item_url = item.get("url", item.get("url_user", ""))
+                    if item_url:
+                        console.print(f"    [{C.C_NEON}]→[/] [{C.C_GOLD}]{service}:[/] [{C.C_WHITE}]{item_url}[/]")
+                    else:
+                        console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{item}[/]")
+                else:
+                    console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{item}[/]")
+        elif isinstance(v, dict):
+            for dk, dv in v.items():
+                if dv:
+                    console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{dk}:[/] [{C.C_WHITE}]{dv}[/]")
+        elif v and str(v) not in ("none", "none found", "N/A", "Unknown", "", "0", "False", "0", "[]", "{}"):
+            console.print(f"    [{C.C_NEON}]→[/] [{C.C_SILVER}]{k}:[/] [{C.C_WHITE}]{v}[/]")
+    if url:
+        console.print(f"    [{C.C_DIM}]→ Link:[/] [{C.C_WHITE}]{url}[/]")
 
 
 def save_all_reports(engine):
@@ -82,8 +93,7 @@ def save_all_reports(engine):
             status_str = "FOUND" if r.is_success() else ("ERROR" if r.error else "NONE")
             f.write(f"[{status_str:6}] {r.source}\n")
             if r.data:
-                for k, v in r.data.items():
-                    f.write(f"  {k}: {v}\n")
+                _write_data(f, r.data)
             if r.error:
                 f.write(f"  Error: {r.error}\n")
             f.write("\n")
@@ -91,5 +101,26 @@ def save_all_reports(engine):
     console.print(Text.from_markup(
         f"  [{C.C_DIM}]Report saved:[/] [{C.C_MID}]{txt_path}[/]"
     ))
-
     return [txt_path]
+
+
+def _write_data(f, data, indent=2):
+    prefix = " " * indent
+    for k, v in data.items():
+        if isinstance(v, list):
+            for item in v:
+                if isinstance(item, dict):
+                    service = item.get("service", item.get("name", "?"))
+                    item_url = item.get("url", item.get("url_user", ""))
+                    if item_url:
+                        f.write(f"{prefix}{service}: {item_url}\n")
+                    else:
+                        f.write(f"{prefix}{item}\n")
+                else:
+                    f.write(f"{prefix}{item}\n")
+        elif isinstance(v, dict):
+            for dk, dv in v.items():
+                if dv:
+                    f.write(f"{prefix}{dk}: {dv}\n")
+        elif v and str(v) not in ("none", "none found", "N/A", "Unknown", "", "0", "False"):
+            f.write(f"{prefix}{k}: {v}\n")
