@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Void OSINT Toolkit - single command launcher
+set -e
+
+# Resolve symlinks to find real script dir
+SCRIPT="$0"
+while [ -h "$SCRIPT" ]; do
+    DIR="$(cd "$(dirname "$SCRIPT")" && pwd)"
+    SCRIPT="$(readlink "$SCRIPT")"
+    [[ "$SCRIPT" != /* ]] && SCRIPT="$DIR/$SCRIPT"
+done
+DIR="$(cd "$(dirname "$SCRIPT")" && pwd)"
+
+# Find Python
+PYTHON=""
+for cmd in python3 python python3.12 python3.11 python3.10; do
+    if command -v "$cmd" &>/dev/null; then
+        PYTHON="$cmd"
+        break
+    fi
+done
+
+if [ -z "$PYTHON" ]; then
+    echo "[!] Python not found. Install Python 3.8+ and try again."
+    exit 1
+fi
+
+exec "$PYTHON" -u "$DIR/Void/main.py" "$@"
