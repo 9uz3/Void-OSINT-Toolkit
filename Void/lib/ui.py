@@ -39,10 +39,15 @@ def make_card_cell(key, label, is_selected, phase=None):
     border = C.C_WHITE if is_selected else (C.C_GOLD if prem else C.C_DIM)
     style = p["neon"] if is_selected else (C.C_GOLD2 if prem else C.C_WHITE)
     text = fmt_label(label, max_len=26)
-    status = "[ #88FFAA bold]READY[/]" if is_selected else f"[{C.C_DIM}]standby[/]"
-    inner = Text.from_markup(
-        f"[{style} bold] {text} [/]\n [{C.C_DIM}]status:[/] {status}" if is_selected else f"   [{style}]{text}[/]"
-    )
+    if is_selected:
+        inner = Text()
+        inner.append(f" {text} ", style=f"{style} bold")
+        inner.append("\n ")
+        inner.append("status:", style=C.C_DIM)
+        inner.append(" ")
+        inner.append("READY", style="#88FFAA bold")
+    else:
+        inner = Text.from_markup(f"   [{style}]{text}[/]")
     return Panel(
         Align.center(inner),
         title=f"[{color} bold]{key}[/]",
